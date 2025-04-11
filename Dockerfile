@@ -21,4 +21,5 @@ RUN go build -o /app/main .
 FROM ubuntu:22.04
 WORKDIR /app
 COPY --from=gowork /app/main .
+EXPOSE 8080
 CMD [ "./main" ]
