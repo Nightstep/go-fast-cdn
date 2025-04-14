@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"crypto/md5"
+	"io"
 	"net/http"
 	"path/filepath"
 
@@ -28,7 +29,6 @@ func (h *ImageHandler) HandleImageUpload(c *gin.Context) {
 	defer file.Close()
 
 	fileBuffer := make([]byte, 512)
-
 	_, err = file.Read(fileBuffer)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to read file: %s", err.Error())
@@ -51,7 +51,16 @@ func (h *ImageHandler) HandleImageUpload(c *gin.Context) {
 		return
 	}
 
-	fileHashBuffer := md5.Sum(fileBuffer)
+	file.Seek(0, 0)
+	fullBuf, err := io.ReadAll(file)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to read full file: %s", err.Error())
+		return
+	}
+
+	fileHashBuffer := md5.Sum(fullBuf)
+
+	file.Seek(0, 0)
 
 	var filename string
 
